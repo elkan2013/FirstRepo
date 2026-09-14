@@ -7,186 +7,242 @@
 import SwiftUI
 
 struct Line: Identifiable {
+    
     let id = UUID()
-    let text: String
-    let intensity: Int
-
+    
+    var text: String
+    var intensity: Int
+    
     var intensityLabel: String {
         if intensity >= 8 {
-            return "strong"
+            return "Brutal"
         } else if intensity >= 5 {
-            return "medium"
+            return "Medium"
         } else {
-            return "small"
+            return "Mild"
         }
     }
 }
 
 struct Tally {
+    
     var compliments = 0
     var insults = 0
+    
+    mutating func recordCompliment() {
+        compliments += 1
+    }
+    
+    mutating func recordInsult() {
+        insults += 1
+    }
 }
 
 struct ContentView: View {
+    
     @State private var tally = Tally()
-    @State private var insultMode = false
-    @State private var currentLine: Line?
+    @State private var isInsultMode = false
+    @State private var lastLine: Line? = nil
     @State private var history: [String] = []
-    @State private var message = "tap the button"
-
-    let compliments = [
-        Line(text: "you remember people's coffee orders and that's a real skill", intensity: 5),
-        Line(text: "you text back like an actual functioning adult", intensity: 3),
-        Line(text: "you'd probably notice if a friend was having a bad day", intensity: 6),
-        Line(text: "you're the one who actually reads the group chat", intensity: 4),
-        Line(text: "you give surprisingly good advice for someone who never takes their own", intensity: 7),
-        Line(text: "you make people feel normal about being weird", intensity: 8)
+    
+    let compliments: [Line] = [
+        Line(text: "you open jars other people struggle with. legend", intensity: 3),
+        Line(text: "you are good in everything", intensity: 5),
+        Line(text: "ur the goat", intensity: 7),
+        Line(text: "you are the most trustworthy guy", intensity: 6),
+        Line(text: "honestly you're doing pretty well.", intensity: 4),
+        Line(text: "you have good vibes. idk why.", intensity: 5),
+        Line(text: "you'd probably survive a zombie apocalypse.", intensity: 7),
+        Line(text: "you seem like you know what you're doing.", intensity: 4),
+        Line(text: "your music taste is probably decent.", intensity: 5),
+        Line(text: "you are surprisingly competent.", intensity: 6)
     ]
-
-    let insults = [
-        Line(text: "you left the group project chat on read for two days", intensity: 5),
-        Line(text: "you have 6 unread badge counts you're never clearing", intensity: 3),
-        Line(text: "you say 'one sec' and disappear for the rest of the night", intensity: 6),
-        Line(text: "you still haven't watched the thing everyone talked about last year", intensity: 4),
-        Line(text: "you argue with the GPS like it can hear you", intensity: 7),
-        Line(text: "you've rewritten the same text message four times and still sent it wrong", intensity: 8)
+    
+    let insults: [Line] = [
+        Line(text: "when u walk u make earthquakes.", intensity: 8),
+        Line(text: "if i gave you a penny for your thoughts, i'd get change back.", intensity: 6),
+        Line(text: "i envy the people who have never met you.", intensity: 9),
+        Line(text: "i've seen houseplants with a better sense of direction.", intensity: 4),
+        Line(text: "you could lose an argument with a wall.", intensity: 5),
+        Line(text: "your brain has left the group chat.", intensity: 7),
+        Line(text: "you bring a very unique energy to the room.", intensity: 3),
+        Line(text: "IF ART SCHOOL SAYS NEIN, EUROPE IS MEIN", intensity: 4),
+        Line(text: "i would explain it but i don't have all day.", intensity: 6),
+        Line(text: "you have the confidence of someone who definitely did not read the instructions.", intensity: 7),
+        Line(text: "respectfully, what are you doing.", intensity: 5),
+        Line(text: "your last thought was buffering.", intensity: 6),
+        Line(text: "I didnt use ai to generate these btw trust", intensity: 7),
+        Line(text: "somehow you made that more complicated.", intensity: 5),
+        Line(text: "i'm not saying you're wrong. i'm just saying... yeah you're wrong.", intensity: 6)
     ]
-
+    
     var body: some View {
+        
         NavigationStack {
-            VStack(spacing: 18) {
+            
+            VStack {
+                
                 Circle()
-                    .fill(insultMode ? .red : .green)
-                    .frame(width: 96, height: 96)
-                    .overlay {
-                        Text(insultMode ? ":/" : ":)")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundStyle(.white)
-                    }
-
-                Text("Compliment or Insult")
-                    .font(.title2)
-                    .bold()
-
-                Text(message)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-
-                Toggle(
-                    insultMode ? "Mean Mode" : "Nice Mode",
-                    isOn: $insultMode
-                )
-                .padding(.horizontal)
-
-                if let line = currentLine {
-                    VStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(insultMode ? .red : .green)
-                            .frame(width: CGFloat(line.intensity) * 18, height: 12)
-
-                        Text(line.intensityLabel)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                    .fill(isInsultMode ? Color.red : Color.green)
+                    .frame(width: 90, height: 90)
+                    .overlay(
+                        Text(isInsultMode ? ">:C gurr" : ":)")
+                            .font(.system(size: 20))
+                    )
+                    .padding(.top, 12)
+                
+                Text("compliment / insult machine")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 8)
+                
+                Toggle("insult mode", isOn: $isInsultMode)
+                    .padding()
+                
+                if let line = lastLine {
+                    
+                    Rectangle()
+                        .fill(isInsultMode ? Color.red : Color.green)
+                        .frame(
+                            width: CGFloat(line.intensity) * 20,
+                            height: 12
+                        )
+                        .cornerRadius(6)
                 }
-
+                
                 Button {
-                    makeLine()
+                    generateLine()
                 } label: {
-                    Text(insultMode ? "Roast Me" : "Hype Me Up")
-                        .bold()
-                        .frame(maxWidth: .infinity)
+                    
+                    Text(isInsultMode ? "roast me" : "glaze me")
+                        .fontWeight(.bold)
                         .padding()
-                        .background(insultMode ? .red : .green)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            isInsultMode ? Color.red : Color.green
+                        )
                         .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(
+                            RoundedRectangle(cornerRadius: 10)
+                        )
                 }
                 .padding(.horizontal)
-
-                Text(currentLine?.text ?? "tap the button")
+                
+                Text(lastLine?.text ?? "click the button above")
                     .font(.headline)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-
+                    .padding()
+                
+                if let line = lastLine {
+                    Text(line.intensityLabel)
+                        .font(.footnote)
+                        .foregroundStyle(.purple)
+                }
+                
                 Spacer()
-
+                
                 List {
-                    Section("History") {
+                    Section("previous") {
+                        
                         if history.isEmpty {
                             Text("nothing yet")
                         } else {
-                            ForEach(history, id: \.self) { item in
-                                Text(item)
+                            ForEach(history, id: \.self) { entry in
+                                Text(entry)
                             }
                         }
                     }
                 }
-                .frame(height: 220)
-
-                NavigationLink {
-                    DetailView(
-                        compliments: $tally.compliments,
-                        insults: $tally.insults,
-                        isInsultMode: $insultMode
-                    )
-                } label: {
-                    Text("View Stats")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding()
-                }
+                .frame(height: 200)
             }
-            .navigationTitle("Home")
+            .navigationTitle("home")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Reset") {
-                        reset()
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("reset") {
+                        resetEverything()
                     }
                 }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("?") {
-                        message = "that button does nothing, sorry"
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink {
+                        DetailView(
+                            compliments: $tally.compliments,
+                            insults: $tally.insults,
+                            isInsultMode: $isInsultMode
+                        )
+                    } label: {
+                        Text("stats")
                     }
                 }
             }
         }
     }
-
-    func makeLine() {
-        let list = insultMode ? insults : compliments
-
-        guard let line = list.randomElement() else {
-            return
-        }
-
-        currentLine = line
-
-        if insultMode {
-            tally.insults += 1
-            message = "sent"
-        } else {
-            tally.compliments += 1
-            message = "sent"
-        }
-
-        let total = tally.compliments + tally.insults
-        let score = (line.intensity * 7 + total - 2) % 101
-
-        let type = insultMode ? "insult" : "compliment"
-        let item = "\(type) #\(total): \(line.text) - score \(score)"
-
-        history.insert(item, at: 0)
+    
+    func pickRandomLine(from lines: [Line]) -> Line {
+        
+        let index = Int.random(in: 0..<lines.count)
+        
+        return lines[index]
     }
-
-    func reset() {
-        tally = Tally()
-        currentLine = nil
+    
+    func calculateMoodScore(intensity: Int, bonus: Int) -> Int {
+        
+        let raw = (intensity * 7) + bonus - 2
+        
+        let score = raw % 101
+        
+        return score
+    }
+    
+    func generateLine() {
+        
+        let source = isInsultMode ? insults : compliments
+        
+        let line = pickRandomLine(from: source)
+        
+        lastLine = line
+        
+        if isInsultMode {
+            tally.recordInsult()
+        } else {
+            tally.recordCompliment()
+        }
+        
+        let score = calculateMoodScore(
+            intensity: line.intensity,
+            bonus: tally.compliments + tally.insults
+        )
+        
+        if line.intensity >= 8 && isInsultMode {
+            print("WARNING: that one was kinda harsh.")
+        } else if line.intensity < 4 || !isInsultMode {
+            print("low key line delivered.")
+        } else {
+            print("standard line delivered.")
+        }
+        
+        let type = isInsultMode ? "insult" : "compliment"
+        
+        let number = tally.compliments + tally.insults
+        
+        let entry = "\(type) #\(number): \(line.text) — score \(score)"
+        
+        history.append(entry)
+    }
+    
+    func resetEverything() {
+        
+        tally.compliments = 0
+        tally.insults = 0
+        
+        lastLine = nil
         history.removeAll()
-        message = "tap the button"
+        
+        print("everything reset. we are back to square one.")
     }
 }
-
 
 #Preview {
     ContentView()
