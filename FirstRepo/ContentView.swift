@@ -8,17 +8,16 @@ import SwiftUI
 
 struct Line: Identifiable {
     let id = UUID()
-    var text: String
-    var intensity: Int
-    
+    let text: String
+    let intensity: Int
+
     var intensityLabel: String {
-        switch intensity {
-        case 8...:
-            return "way too much"
-        case 5..<8:
-            return "a bit much"
-        default:
-            return "barely there"
+        if intensity >= 8 {
+            return "strong"
+        } else if intensity >= 5 {
+            return "medium"
+        } else {
+            return "small"
         }
     }
 }
@@ -26,227 +25,165 @@ struct Line: Identifiable {
 struct Tally {
     var compliments = 0
     var insults = 0
-    
-    mutating func recordCompliment() {
-        compliments += 1
-    }
-    
-    mutating func recordInsult() {
-        insults += 1
-    }
 }
 
 struct ContentView: View {
     @State private var tally = Tally()
-    @State private var isInsultMode = false
-    @State private var lastLine: Line? = nil
+    @State private var insultMode = false
+    @State private var currentLine: Line?
     @State private var history: [String] = []
-    @State private var sillyStatus: String = "nothing is happening, which is honestly fine"
-    @State private var tapCount = 0
-    @State private var fakeWisdom = "the button has not spoken yet"
-    
-    let compliments: [Line] = [
-        Line(text: "you seem nice in a way that doesn't try too hard.", intensity: 3),
-        Line(text: "you probably hold the door for people and then pretend it was accidental.", intensity: 4),
-        Line(text: "you give off the energy of someone who knows where their keys are.", intensity: 5),
-        Line(text: "you are, against all odds, kind of a reassuring person.", intensity: 6),
-        Line(text: "you look like you would remember birthdays without making it weird.", intensity: 7),
-        Line(text: "you feel like the kind of person who says 'no worries' and means it.", intensity: 4),
-        Line(text: "you are probably better at things than you admit.", intensity: 5),
-        Line(text: "your vibe is weirdly comforting.", intensity: 6),
-        Line(text: "you seem like you could survive a group project with minimal damage.", intensity: 7),
-        Line(text: "you are doing just fine, and honestly that's kind of impressive.", intensity: 8)
+    @State private var message = "tap the button"
+
+    let compliments = [
+        Line(text: "you remember people's coffee orders and that's a real skill", intensity: 5),
+        Line(text: "you text back like an actual functioning adult", intensity: 3),
+        Line(text: "you'd probably notice if a friend was having a bad day", intensity: 6),
+        Line(text: "you're the one who actually reads the group chat", intensity: 4),
+        Line(text: "you give surprisingly good advice for someone who never takes their own", intensity: 7),
+        Line(text: "you make people feel normal about being weird", intensity: 8)
     ]
-    
-    let insults: [Line] = [
-        Line(text: "you have the energy of a chair with bad news.", intensity: 4),
-        Line(text: "respectfully, your decisions are a little suspicious.", intensity: 5),
-        Line(text: "you seem like the type to say 'one sec' and ghost forever.", intensity: 6),
-        Line(text: "you probably open ten tabs and call it organization.", intensity: 7),
-        Line(text: "you move like you are always mildly lost.", intensity: 4),
-        Line(text: "your thought process feels like it needs subtitles.", intensity: 5),
-        Line(text: "you look like you would click the wrong button and blame the screen.", intensity: 6),
-        Line(text: "you could probably start a fire by trying to make toast.", intensity: 7),
-        Line(text: "you have the confidence of someone who absolutely should not.", intensity: 8),
-        Line(text: "you are one of those people who makes simple tasks feel ceremonial.", intensity: 9)
+
+    let insults = [
+        Line(text: "you left the group project chat on read for two days", intensity: 5),
+        Line(text: "you have 6 unread badge counts you're never clearing", intensity: 3),
+        Line(text: "you say 'one sec' and disappear for the rest of the night", intensity: 6),
+        Line(text: "you still haven't watched the thing everyone talked about last year", intensity: 4),
+        Line(text: "you argue with the GPS like it can hear you", intensity: 7),
+        Line(text: "you've rewritten the same text message four times and still sent it wrong", intensity: 8)
     ]
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 18) {
                 Circle()
-                    .fill(isInsultMode ? Color.red.opacity(0.85) : Color.green.opacity(0.85))
+                    .fill(insultMode ? .red : .green)
                     .frame(width: 96, height: 96)
-                    .overlay(
-                        Text(isInsultMode ? ":/" : ":)")
+                    .overlay {
+                        Text(insultMode ? ":/" : ":)")
                             .font(.system(size: 24, weight: .bold))
                             .foregroundStyle(.white)
-                    )
-                    .padding(.top, 12)
-                
-                Text("the button that does not matter")
+                    }
+
+                Text("Compliment or Insult")
                     .font(.title2)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                Text(sillyStatus)
+                    .bold()
+
+                Text(message)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
+
                 Toggle(
-                    isInsultMode ? "mean mode" : "nice mode",
-                    isOn: $isInsultMode
+                    insultMode ? "Mean Mode" : "Nice Mode",
+                    isOn: $insultMode
                 )
                 .padding(.horizontal)
-                
-                if let line = lastLine {
-                    VStack(alignment: .leading, spacing: 8) {
+
+                if let line = currentLine {
+                    VStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(isInsultMode ? Color.red : Color.green)
+                            .fill(insultMode ? .red : .green)
                             .frame(width: CGFloat(line.intensity) * 18, height: 12)
-                        
+
                         Text(line.intensityLabel)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                    .padding(.horizontal)
                 }
-                
+
                 Button {
-                    generateLine()
+                    makeLine()
                 } label: {
-                    Text(isInsultMode ? "be rude for no reason" : "say something nice for no reason")
-                        .fontWeight(.semibold)
-                        .padding()
+                    Text(insultMode ? "Roast Me" : "Hype Me Up")
+                        .bold()
                         .frame(maxWidth: .infinity)
-                        .background(isInsultMode ? Color.red : Color.green)
+                        .padding()
+                        .background(insultMode ? .red : .green)
                         .foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .padding(.horizontal)
-                
-                Text(lastLine?.text ?? "press the button. it won't help, but it will do something.")
+
+                Text(currentLine?.text ?? "tap the button")
                     .font(.headline)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
-                
-                Spacer(minLength: 8)
-                
+
+                Spacer()
+
                 List {
-                    Section("things that happened") {
+                    Section("History") {
                         if history.isEmpty {
-                            Text("nothing yet. the app is still thinking about it.")
+                            Text("nothing yet")
                         } else {
-                            ForEach(history, id: \.self) { entry in
-                                Text(entry)
+                            ForEach(history, id: \.self) { item in
+                                Text(item)
                             }
                         }
                     }
                 }
                 .frame(height: 220)
-                
+
                 NavigationLink {
                     DetailView(
                         compliments: $tally.compliments,
                         insults: $tally.insults,
-                        isInsultMode: $isInsultMode
+                        isInsultMode: $insultMode
                     )
                 } label: {
-                    HStack {
-                        Text("look at stats nobody asked for")
-                        Spacer()
-                    }
-                    .padding()
+                    Text("View Stats")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
                 }
-                .padding(.horizontal)
             }
-            .navigationTitle("home")
+            .navigationTitle("Home")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("reset") {
-                        resetEverything()
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Reset") {
+                        reset()
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("huh") {
-                        sillyStatus = "that button was decorative. classic."
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("?") {
+                        message = "that button does nothing, sorry"
                     }
                 }
             }
         }
     }
-    
-    func pickRandomLine(from lines: [Line]) -> Line {
-        lines.randomElement() ?? Line(text: "the void was unavailable.", intensity: 1)
-    }
-    
-    func calculateMoodScore(intensity: Int, bonus: Int) -> Int {
-        let raw = (intensity * 7) + bonus - 2
-        return raw % 101
-    }
-    
-    func generateLine() {
-        tapCount += 1
-        
-        let source = isInsultMode ? insults : compliments
-        let line = pickRandomLine(from: source)
-        lastLine = line
-        
-        if isInsultMode {
-            tally.recordInsult()
-        } else {
-            tally.recordCompliment()
+
+    func makeLine() {
+        let list = insultMode ? insults : compliments
+
+        guard let line = list.randomElement() else {
+            return
         }
-        
-        let score = calculateMoodScore(
-            intensity: line.intensity,
-            bonus: tally.compliments + tally.insults
-        )
-        
-        if isInsultMode {
-            switch line.intensity {
-            case 8...:
-                sillyStatus = "that was kinda wild. maybe chill a little."
-            case 5..<8:
-                sillyStatus = "rude, but in a conversational way."
-            default:
-                sillyStatus = "barely a roast. emotionally undercooked."
-            }
+
+        currentLine = line
+
+        if insultMode {
+            tally.insults += 1
+            message = "sent"
         } else {
-            switch line.intensity {
-            case 8...:
-                sillyStatus = "okay wait that was actually sweet."
-            case 5..<8:
-                sillyStatus = "solid compliment. emotionally edible."
-            default:
-                sillyStatus = "tiny compliment. little guy."
-            }
+            tally.compliments += 1
+            message = "sent"
         }
-        
-        fakeWisdom = tapCount.isMultiple(of: 3)
-        ? "the third tap has special powers. scientifically untrue, but still."
-        : "the button remains committed to being unhelpful."
-        
-        let type = isInsultMode ? "roast" : "compliment"
-        let number = tally.compliments + tally.insults
-        let entry = "\(type) #\(number): \(line.text) — score \(score)"
-        
-        history.insert(entry, at: 0)
+
+        let total = tally.compliments + tally.insults
+        let score = (line.intensity * 7 + total - 2) % 101
+
+        let type = insultMode ? "insult" : "compliment"
+        let item = "\(type) #\(total): \(line.text) - score \(score)"
+
+        history.insert(item, at: 0)
     }
-    
-    func resetEverything() {
-        tally.compliments = 0
-        tally.insults = 0
-        lastLine = nil
+
+    func reset() {
+        tally = Tally()
+        currentLine = nil
         history.removeAll()
-        tapCount = 0
-        sillyStatus = "reset complete. nothing learned."
-        fakeWisdom = "the button has not spoken yet"
+        message = "tap the button"
     }
 }
 
