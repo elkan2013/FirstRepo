@@ -60,20 +60,20 @@ struct ContentView: View {
     
     let insults: [Line] = [
         Line(text: "when u walk u make earthquakes.", intensity: 8),
-        Line(text: "i like toong toong toong saheer", intensity: 6),
+        Line(text: "if i gave you a penny for your thoughts, i'd get change back.", intensity: 6),
         Line(text: "i envy the people who have never met you.", intensity: 9),
         Line(text: "i've seen houseplants with a better sense of direction.", intensity: 4),
         Line(text: "you could lose an argument with a wall.", intensity: 5),
         Line(text: "your brain has left the group chat.", intensity: 7),
         Line(text: "you bring a very unique energy to the room.", intensity: 3),
-        Line(text: "IF ART SCHOOL SAYS NEIN, EUROPE IS MEIN", intensity: 10),
+        Line(text: "IF ART SCHOOL SAYS NEIN, EUROPE IS MEIN", intensity: 4),
         Line(text: "i would explain it but i don't have all day.", intensity: 6),
         Line(text: "you have the confidence of someone who definitely did not read the instructions.", intensity: 7),
         Line(text: "respectfully, what are you doing.", intensity: 5),
         Line(text: "your last thought was buffering.", intensity: 6),
         Line(text: "I didnt use ai to generate these btw trust", intensity: 7),
         Line(text: "somehow you made that more complicated.", intensity: 5),
-        Line(text: "i'm not saying you're wrong. i'm just saying... yeah ur wrong.", intensity: 6)
+        Line(text: "i'm not saying you're wrong. i'm just saying... yeah you're wrong.", intensity: 6)
     ]
     
     var body: some View {
@@ -86,8 +86,8 @@ struct ContentView: View {
                     .fill(isInsultMode ? Color.red : Color.green)
                     .frame(width: 90, height: 90)
                     .overlay(
-                        Text(isInsultMode ? "😈" : "😇")
-                            .font(.system(size: 40))
+                        Text(isInsultMode ? ">:C gurr" : ":)")
+                            .font(.system(size: 20))
                     )
                     .padding(.top, 12)
                 
